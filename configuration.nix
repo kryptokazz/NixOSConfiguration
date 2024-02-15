@@ -1,41 +1,23 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
-let
-    home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
-    config = {
-      allowUnfree = true;
-    };
-in
 {
-  imports = [
-    ./hardware-configuration.nix
-    (import "${stable}/nixos")  # Import stable channel configuration
-  ];
+  imports =
+    [ # Include the results of the hardware scan.
+      ./hardware-configuration.nix
+    ];
 
-  home-manager.users.kryptokazz = {
-	home.stateVersion = "23.11";
- };
-}
-
-
-  # Enable experimental features (flakes)
-  nix.settings.experimental-features = ["nix-command" "flakes"];
-
-  # Bootloader
+  # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  # Auto optimize store
-  nix.settings.auto-optimise-store = true;
-
-  networking.hostName = "kryptokazz";
-  networking.networkmanager.enable = true;
+  networking.hostName = "kryptokazz"; # Define your hostname.
+  networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking.firewall.enable = false;
+
 
   time.timeZone = "Australia/Brisbane";
 
   i18n.defaultLocale = "en_AU.UTF-8";
-
   i18n.extraLocaleSettings = {
     LC_ADDRESS = "en_AU.UTF-8";
     LC_IDENTIFICATION = "en_AU.UTF-8";
@@ -48,9 +30,19 @@ in
     LC_TIME = "en_AU.UTF-8";
   };
 
+
+
+
+# Enable IBus input method framework 
+i18n.inputMethod = {
+	enabled = "ibus";
+	ibus.engines = with pkgs.ibus-engines; [libpinyin hangul];
+};
+
+
+
   services.mullvad-vpn = {
     enable = true;
-    package = pkgs.mullvad-vpn;
   };
 
   services.xserver = {
@@ -60,12 +52,9 @@ in
     displayManager.sddm.enable = true;
   };
 
-  virtualisation.containerd.enable = true;
+  services.getty.autologinUser = "kryptokazz";
 
-  services.k3s = {
-    enable = true;
-    role = "server";
-  };
+  services.printing.enable = true;
 
   services.postgresql = {
     enable = true;
@@ -90,14 +79,9 @@ in
     options = "--delete-older-than 7d";
   };
 
-  services.getty.autologinUser = "kryptokazz";
-
   system.autoUpgrade = {
     enable = true;
   };
-
-  # Change this line to use the stable channel
-  nixpkgs.config.allowBroken = true;
 
   fonts.packages = with pkgs; [
     noto-fonts
@@ -113,124 +97,58 @@ in
     proggyfonts
   ];
 
+
+  security.pam.services.swaylock = {};
   security.polkit.enable = true;
 
-  # Change this line to use the stable channel
-  environment.systemPackages = with stable; [
+  environment.systemPackages = with pkgs; [
     kitty
-    swww
-    libnotify 
-    mako
-    pkgs.home-manager
     swaylock
-    material-design-icons
-    rustc
-    cargo
+    swww
     waybar
     python3
-    appimagekit
-    appimage-run    
-    unixODBC
+    libxcrypt
+    libsForQt5.qt5ct
     git
-    subversion
     redshift
-    nmap
-    htop
-    freetube
-    rsync
-    ncdu
-    tree
-    bruno
-    modd
-    mullvad-vpn
+    htop		
+    ghc
+    gnome.pomodoro
+    SDL
+    SDL2
+    bun 	
+    porsmo
+    anki-bin
+    localsend
+    mullvad
+    cargo
+    nss 
+    iputils
+    nodejs_21
+    libnotify 
+    gtk3 
+    vim  
+    gcc
+    ncurses
     mesa
     libGL
-    gcc
-    gnome.pomodoro
     alacritty
-    gnumake
-    cmake
-    insomnia
-    planify
-    ghc
-    tk
-    glxinfo 
-    nodejs_20
-    unetbootin
-    docker
-    raven-reader
-    dynamips
-    bisq-desktop
-    localsend
-    nerdctl
-    jdk
-    haskell-ci
-    mcomix
-    syncthing
-    unrar
-    fluent-reader
     pgadmin4
     postgresql
-    zip
-    go
-    retext
-    elixir_1_14
-    vim
-    neovim
-    htop
-    firefox-bin
-    tree
     unzip
-    gnutar
     curl
     jq
-    libsForQt5.sddm
-    gzip
-    curl
-    wget
-    netcat
-    libstdcxx5
-    openvpn
-    openssh
-    screen
-    lsd
-    tmux
     zsh
-    bashInteractive
-    podman
-    terraform
     nix
-    bun
     ansible
     libreoffice-fresh
-    gns3-server
-    gns3-gui
-    packer
+    mpv
+    firefox
+    keepassxc
     mpv
   ];
 
-  services.redshift = {
-    enable = true;
-    brightness = {
-      day = 1;
-      night = 1;
-    };
-
-    temperature = {
-      day = 5500;
-      night = 3700;
-    };
-  };
-
-  location.latitude = 151.209900;
-  location.longitude = -33.865143;
-
   boot.initrd.kernelModules = [ "amdgpu" ];
-
-  virtualisation.docker.enable = true;
-
-  hardware.opengl.driSupport = true;
-  hardware.opengl.driSupport32Bit = true;
 
   programs.zsh.enable = true;
 
@@ -248,7 +166,13 @@ in
 
   services.openssh.enable = true;
 
-  # Change this line to use the stable channel
   system.stateVersion = "23.11";
+
+  # Use /dev/nvme0n1p3 for /home/nixoshome
+  fileSystems."/home/nixoshome" = {
+    device = "/dev/nvme0n1p3";
+    fsType = "ext4"; # Adjust if using a different file system type
+  };
 }
+
 
