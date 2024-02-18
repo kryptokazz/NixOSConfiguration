@@ -104,6 +104,7 @@ i18n.inputMethod = {
   environment.systemPackages = with pkgs; [
     kitty
     swaylock
+    framesh
     swww
     waybar
     python3
@@ -116,6 +117,7 @@ i18n.inputMethod = {
     gnome.pomodoro
     SDL
     SDL2
+    SDL2_image
     bun 	
     porsmo
     anki-bin
