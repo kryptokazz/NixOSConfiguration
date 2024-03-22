@@ -14,6 +14,8 @@
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking.firewall.enable = false;
 
+  nix.settings.experimental-features = ["nix-command" "flakes" ];  
+
 
   time.timeZone = "Australia/Brisbane";
 
@@ -31,8 +33,6 @@
   };
 
 
-
-
 # Enable IBus input method framework 
 i18n.inputMethod = {
 	enabled = "ibus";
@@ -40,10 +40,33 @@ i18n.inputMethod = {
 };
 
 
+ environment.etc."alacritty/alacritty.yml".source = ~/.config;
 
   services.mullvad-vpn = {
     enable = true;
   };
+
+
+ services.logind.extraConfig = ''
+    HandlePowerKey=suspend
+  '';
+  
+  programs.thunar.enable = true; 
+  programs.xfconf.enable = true;
+
+  programs.thunar.plugins = with pkgs.xfce; [
+  thunar-archive-plugin
+  thunar-volman
+  ];
+
+  services.gvfs.enable = true; 
+  services.tumbler.enable = true;
+  services.udisks2.enable = true;
+  services.devmon.enable = true;
+
+
+
+
 
   services.xserver = {
     layout = "au";
@@ -51,6 +74,9 @@ i18n.inputMethod = {
     enable = true;
     displayManager.sddm.enable = true;
   };
+
+  services.xserver.videoDrivers = ["modesetting"];
+
 
   services.getty.autologinUser = "kryptokazz";
 
@@ -76,7 +102,7 @@ i18n.inputMethod = {
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    options = "--delete-older-than 7d";
+    options = "--delete-older-than 3d";
   };
 
   system.autoUpgrade = {
@@ -87,7 +113,6 @@ i18n.inputMethod = {
     noto-fonts
     font-awesome
     noto-fonts-cjk
-    nerdfonts
     noto-fonts-emoji
     liberation_ttf
     fira-code
@@ -113,18 +138,42 @@ i18n.inputMethod = {
     git
     redshift
     htop		
-    ghc
     gnome.pomodoro
+    gnome.gvfs
+    typescript 
+    calibre-web
+    bk
     SDL
     SDL2
+    gnumake
+    pcmanfm
+    imagemagick
+    wayland-protocols
+    wayland-scanner
+    firefox-devedition
+    wireplumber
+    pamixer
+    qalculate-gtk
+    playerctl
+    river
+    scdoc
+    rustup
+    mullvad-browser
+    tldr
+    bat
+    mullvad-closest
     SDL2_image
     bun 	
     porsmo
     anki-bin
     localsend
-    mullvad
+    mullvad	
+    glfw
+    freeglut
+    mesa
     cargo
     nss 
+    ventoy-full
     iputils
     nodejs_21
     libnotify 
@@ -145,12 +194,23 @@ i18n.inputMethod = {
     ansible
     libreoffice-fresh
     mpv
-    firefox
+    firefox-bin
     keepassxc
     mpv
   ];
 
   boot.initrd.kernelModules = [ "amdgpu" ];
+ 
+  hardware.opengl.extraPackages = with pkgs; [ amdvlk
+	];
+
+hardware.opengl.extraPackages32 = with pkgs; [
+	driversi686Linux.amdvlk
+];
+
+
+hardware.opengl.enable = true;
+
 
   programs.zsh.enable = true;
 
