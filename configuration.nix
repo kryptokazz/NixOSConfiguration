@@ -14,10 +14,21 @@
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
   networking.firewall.enable = false;
 
+    nixpkgs.config.allowUnfree = true;
   nix.settings.experimental-features = ["nix-command" "flakes" ];  
 
-
   time.timeZone = "Australia/Brisbane";
+
+  nixpkgs.overlays = [
+    (final: prev: {
+      steam = prev.steam.override ({ extraLibraries ? pkgs': [], ... }: {
+        extraLibraries = pkgs': (extraLibraries pkgs') ++ ( [
+          pkgs'.gperftools
+        ]);
+      });
+    })
+  ];
+
 
   i18n.defaultLocale = "en_AU.UTF-8";
   i18n.extraLocaleSettings = {
@@ -53,11 +64,14 @@ i18n.inputMethod = {
   
   programs.thunar.enable = true; 
   programs.xfconf.enable = true;
-
+  programs.steam.enable = true;
   programs.thunar.plugins = with pkgs.xfce; [
   thunar-archive-plugin
   thunar-volman
   ];
+
+
+  programs.noisetorch.enable = true; 
 
   services.gvfs.enable = true; 
   services.tumbler.enable = true;
@@ -146,14 +160,33 @@ i18n.inputMethod = {
     SDL
     SDL2
     gnumake
+    julia_18-bin
+    zoxide
+    nodePackages_latest.gulp
+    electron_28    
+   (pkgs.wrapOBS {
+    plugins = with pkgs.obs-studio-plugins; [
+    obs-backgroundremoval
+    obs-pipewire-audio-capture
+    wlrobs
+    ];
+    })
+    
+    wine
+    unrar
+    nix-index
+    wayshot
+    pkgsi686Linux.gperftools
     pcmanfm
     imagemagick
     wayland-protocols
+    waylandpp
+    wayland-utils
     wayland-scanner
     firefox-devedition
     wireplumber
     pamixer
-    qalculate-gtk
+    qalculate-qt
     playerctl
     river
     scdoc
